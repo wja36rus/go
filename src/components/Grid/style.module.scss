@@ -1,0 +1,44 @@
+.gridWrapper {
+  display: grid;
+  margin: 5rem;
+  position: relative;
+
+  .grid {
+    border: 1px solid black;
+    width: 92px;
+    height: 92px;
+    align-items: center;
+    display: grid;
+  }
+}
+
+.pointWrapper {
+  position: absolute;
+  width: 108%;
+  height: 112%;
+  display: grid;
+  top: -26px;
+  right: -30px;
+}
+
+.pointLine {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(9, 0fr);
+  justify-content: space-between;
+}
+
+.point {
+  width: 4rem;
+  height: 4rem;
+  text-align: center;
+  transition: 0.5s;
+  border-radius: 50%;
+
+  &:hover {
+    cursor: pointer;
+    border: 5px solid gray;
+    transition: 0.5s;
+    transform: scale(1.5);
+  }
+}

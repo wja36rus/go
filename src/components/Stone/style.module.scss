@@ -1,0 +1,8 @@
+.stone {
+  box-shadow: 3px 3px 4px #00000052;
+  border-radius: 50%;
+
+  &:hover {
+    cursor: pointer;
+  }
+}

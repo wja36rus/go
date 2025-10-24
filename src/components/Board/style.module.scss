@@ -1,0 +1,13 @@
+.boardflex {
+  display: flex;
+  width: 56rem;
+  height: 56rem;
+  background-image: url("../../assets/images/background.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: 5px 5px 5px 0px #00000029;
+}
+
+.input {
+  border: 1px solid gray;
+}
