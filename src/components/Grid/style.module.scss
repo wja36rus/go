@@ -42,3 +42,16 @@
     transform: scale(1.5);
   }
 }
+
+.pointLast {
+  cursor: pointer;
+  border: 5px solid gray;
+  transition: 0.5s;
+  transform: scale(1.1);
+}
+
+.clearButton {
+  position: fixed;
+  top: 3rem;
+  right: 3rem;
+}

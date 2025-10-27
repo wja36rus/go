@@ -390,6 +390,7 @@ class WebSocketGameServer {
 
     const messageHandlers = {
       MOVE: () => this.handleMove(clientId, move),
+      CLEAR: () => this.handleClear(clientId, move),
       CREATE_USER: () => this.handleCreateUser(clientId, user),
       RELOAD: () => this.handleReload(),
       PING: () => this.handlePing(clientId),
@@ -407,7 +408,10 @@ class WebSocketGameServer {
   handleReload() {
     this.gameData.user = [];
     this.gameData.start = "black";
-    this.gameData.point = initialData.point;
+    this.gameData.point.forEach((element) => {
+      element.user = "";
+      element.last = "";
+    });
 
     const reloadData = {
       type: "RELOAD",
@@ -424,11 +428,24 @@ class WebSocketGameServer {
       this.sendError(clientId, "Invalid user data");
       return;
     }
-
-    if (this.gameData.user.length === 0) {
-      this.gameData.user.push({ id: user.id, name: user.name, color: "black" });
+    if (this.gameData.user.length > 1) {
+      return;
     } else {
-      this.gameData.user.push({ id: user.id, name: user.name, color: "white" });
+      if (this.gameData.user.length === 0) {
+        this.gameData.user.push({
+          id: user.id,
+          name: user.name,
+          color: "black",
+          eats: [],
+        });
+      } else {
+        this.gameData.user.push({
+          id: user.id,
+          name: user.name,
+          color: "white",
+          eats: [],
+        });
+      }
     }
 
     const createUserData = {
@@ -438,6 +455,33 @@ class WebSocketGameServer {
 
     this.broadcast(createUserData);
     console.log(`🎯 User created by ${clientId}: ${user.name} (${user.id})`);
+  }
+
+  handleClear(clientId, move) {
+    if (!move || move.cellId === undefined || !move.gameId) {
+      console.warn(`⚠️ Invalid MOVE data from ${clientId}`);
+      this.sendError(clientId, "Invalid move data");
+      return;
+    }
+
+    const cell = this.gameData.point.find((item) => item.id == move.cellId);
+
+    cell.user = "";
+    cell.last = "";
+
+    this.gameData.user
+      .find((item) => item.id == move.uuid)
+      .eats.push(move.cellId);
+
+    const moveDataUser = {
+      type: "CLEAR",
+      data: this.gameData,
+    };
+
+    this.broadcast(moveDataUser);
+    console.log(
+      `🎯 Move by ${clientId}: cell ${move.cellId}, game ${move.gameId}`
+    );
   }
 
   handleMove(clientId, move) {
@@ -453,6 +497,10 @@ class WebSocketGameServer {
       cell.user = "";
     } else {
       cell.user = move.uuid;
+      this.gameData.point.forEach((element) => {
+        element.last = "";
+      });
+      cell.last = true;
 
       if (this.gameData.start === "black") {
         this.gameData.start = "white";

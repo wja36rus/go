@@ -4,9 +4,12 @@ import { WhiteStone } from "../Stone/WhiteStone";
 import { BlackStone } from "../Stone/BlackStone";
 import { useContext } from "react";
 import { AppContext } from "../../providers/AppContext";
+import cn from "classnames";
+import { useState } from "react";
 
 export const Grid = () => {
-  const { sendMove } = useContext(AppContext);
+  const { sendMove, sendClear } = useContext(AppContext);
+  const [clear, setClear] = useState(false);
 
   const col = useAppStore.use.col();
   const row = useAppStore.use.row();
@@ -45,8 +48,8 @@ export const Grid = () => {
 
     return outputSixThenFive(point).map((item, index) => (
       <div key={index} className={style.pointLine}>
-        {item.map(({ id, user }) => (
-          <PointItem key={id} id={id} user={user} />
+        {item.map(({ id, user, last }) => (
+          <PointItem key={id} id={id} user={user} last={last} />
         ))}
       </div>
     ));
@@ -56,16 +59,24 @@ export const Grid = () => {
     return userData.find((item) => item.id == user)?.color;
   };
 
-  const PointItem = ({ id, user }) => {
+  const PointItem = ({ id, user, last }) => {
     const handlerCheckStone = (id) => {
       const coloUser = getStoneByUser(activeUser);
 
-      if (coloUser == start) {
-        sendMove({
+      if (clear) {
+        sendClear({
           cellId: id,
           uuid: activeUser,
           gameId: "local-game",
         });
+      } else {
+        if (coloUser == start) {
+          sendMove({
+            cellId: id,
+            uuid: activeUser,
+            gameId: "local-game",
+          });
+        }
       }
     };
 
@@ -75,24 +86,32 @@ export const Grid = () => {
     };
 
     return (
-      <div className={style.point} onClick={() => handlerCheckStone(id)}>
+      <div
+        className={cn(style.point, last && style.pointLast)}
+        onClick={() => handlerCheckStone(id)}
+      >
         {stoneMap[getStoneByUser(user)]}
       </div>
     );
   };
 
   return (
-    <div
-      style={{
-        gridTemplateColumns: `repeat(${col}, 0fr)`,
-        gridTemplateRows: `repeat(${row}, 0fr)`,
-      }}
-      className={style.gridWrapper}
-    >
-      <div className={style.pointWrapper}>
-        <Point />
+    <>
+      <button className={style.clearButton} onClick={() => setClear(!clear)}>
+        {clear ? "Выключить очистку" : "Включить очистку"}
+      </button>
+      <div
+        style={{
+          gridTemplateColumns: `repeat(${col}, 0fr)`,
+          gridTemplateRows: `repeat(${row}, 0fr)`,
+        }}
+        className={style.gridWrapper}
+      >
+        <div className={style.pointWrapper}>
+          <Point />
+        </div>
+        <GridItem />
       </div>
-      <GridItem />
-    </div>
+    </>
   );
 };

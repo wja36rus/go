@@ -53,6 +53,10 @@ export const useWebSocket = (url) => {
               setGameData(data.data);
               break;
 
+            case "CLEAR":
+              setGameData(data.data);
+              break;
+
             case "MOVE":
               setGameData(data.data);
               break;
@@ -116,6 +120,15 @@ export const useWebSocket = (url) => {
     };
   }, [connect]);
 
+  const sendClear = useCallback((move) => {
+    wsRef.current.send(
+      JSON.stringify({
+        type: "CLEAR",
+        move: move,
+      })
+    );
+  }, []);
+
   const sendMove = useCallback((move) => {
     wsRef.current.send(
       JSON.stringify({
@@ -160,6 +173,7 @@ export const useWebSocket = (url) => {
     isConnected,
     sendMove,
     sendReload,
+    sendClear,
     createUser,
     ping,
     reconnect,

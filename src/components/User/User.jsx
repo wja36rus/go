@@ -45,6 +45,7 @@ export const User = () => {
         <div key={item.id} className={style.userList}>
           <p>{item.name}</p>
           <p>{stoneMap[item.color]}</p>
+          <p>Съедено: {currentUser?.eats?.length}</p>
         </div>
       ))}
 
