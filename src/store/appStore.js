@@ -43,16 +43,16 @@ const useAppStoreBase = create()(
             state.user = [...state.user, { ...user, color: "white" }];
           }
         }),
-      setStoneByUser: (id, user) => {
+      setStoneByUser: (move) => {
         set((state) => {
-          const find = state.point.find((item) => item.id == id);
+          const find = state.point.find((item) => item.id == move.cellId);
 
           if (find.user !== "") {
             find.user = "";
             return;
           }
 
-          find.user = user;
+          find.user = move.uuid;
 
           if (state.start == "black") {
             state.start = "white";

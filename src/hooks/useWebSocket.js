@@ -10,6 +10,20 @@ export const useWebSocket = (url) => {
   const isConnectingRef = useRef(false);
   const addUser = useAppStore.use.addUser();
   const setStoneByUser = useAppStore.use.setStoneByUser();
+  const [gameData, setGameData] = useState();
+
+  useEffect(() => {
+    const user = gameData?.user;
+    const move = gameData?.move;
+
+    if (user) {
+      addUser(user);
+    }
+
+    if (move) {
+      setStoneByUser(move);
+    }
+  }, [gameData]);
 
   const connect = useCallback(() => {
     if (
@@ -43,12 +57,13 @@ export const useWebSocket = (url) => {
               break;
 
             case "CREATE_USER":
-              addUser({ id: data.data.id, name: data.data.name });
+              setGameData({ user: { id: data.data.id, name: data.data.name } });
               break;
 
             case "MOVE":
-              setStoneByUser(data.data.cellId, data.data.uuid);
-
+              setGameData({
+                move: { cellId: data.data.cellId, uuid: data.data.uuid },
+              });
               break;
 
             case "PONG":
