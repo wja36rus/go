@@ -97,7 +97,10 @@ export const Grid = () => {
 
   return (
     <>
-      <button className={style.clearButton} onClick={() => setClear(!clear)}>
+      <button
+        className={cn(clear ? style.clearButtonOn : style.clearButtonOff)}
+        onClick={() => setClear(!clear)}
+      >
         {clear ? "Выключить очистку" : "Включить очистку"}
       </button>
       <div

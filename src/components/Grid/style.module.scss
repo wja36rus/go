@@ -50,8 +50,22 @@
   transform: scale(1.1);
 }
 
-.clearButton {
+.clearButtonOn {
   position: fixed;
-  top: 3rem;
-  right: 3rem;
+  top: 2rem;
+  right: 2rem;
+  color: white;
+  background: red;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.clearButtonOff {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  color: white;
+  background: green;
+  padding: 5px;
+  border-radius: 5px;
 }
