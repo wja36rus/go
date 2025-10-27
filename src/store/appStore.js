@@ -20,14 +20,16 @@ const useAppStoreBase = create()(
       count: col * row,
       point: [],
       start: "black",
+      clear: false,
 
       setData: (data) =>
         set((state) => {
           if (typeof data !== "undefined") {
-            const { user, point, start } = data;
+            const { user, point, start, clear } = data;
             state.user = user;
             state.point = point;
             state.start = start;
+            state.clear = clear;
           }
         }),
     }))

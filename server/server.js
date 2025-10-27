@@ -3,6 +3,7 @@ import { WebSocketServer } from "ws";
 const initialData = {
   user: [],
   start: "black",
+  clear: false,
   point: [
     {
       id: 1,
@@ -384,15 +385,17 @@ class WebSocketGameServer {
   }
 
   routeMessage(clientId, message) {
-    const { type, move, user } = message;
+    const { type, move, user, clear } = message;
 
     console.log(`📨 Received message from ${clientId}:`, message);
 
     const messageHandlers = {
       MOVE: () => this.handleMove(clientId, move),
       CLEAR: () => this.handleClear(clientId, move),
+      SET_CLEAR: () => this.handleSetClear(clear),
       CREATE_USER: () => this.handleCreateUser(clientId, user),
       RELOAD: () => this.handleReload(),
+      EXIT_GAME: () => this.handleExit(),
       PING: () => this.handlePing(clientId),
     };
 
@@ -405,9 +408,30 @@ class WebSocketGameServer {
     }
   }
 
-  handleReload() {
+  handleExit() {
     this.gameData.user = [];
     this.gameData.start = "black";
+    this.gameData.clear = false;
+    this.gameData.point.forEach((element) => {
+      element.user = "";
+      element.last = "";
+    });
+
+    const reloadData = {
+      type: "EXIT_GAME",
+      data: this.gameData,
+    };
+
+    this.broadcast(reloadData);
+    console.log(`🎯 Exit success`);
+  }
+
+  handleReload() {
+    this.gameData.user.forEach((element) => {
+      element.eats = [];
+    });
+    this.gameData.start = "black";
+    this.gameData.clear = false;
     this.gameData.point.forEach((element) => {
       element.user = "";
       element.last = "";
@@ -455,6 +479,21 @@ class WebSocketGameServer {
 
     this.broadcast(createUserData);
     console.log(`🎯 User created by ${clientId}: ${user.name} (${user.id})`);
+  }
+
+  handleSetClear(clear) {
+    console.log("### ~ WebSocketGameServer ~ handleSetClear ~ clear:", clear);
+
+    this.gameData.clear = clear.clear;
+    this.gameData.clearUser = clear.uuid;
+
+    const createUserData = {
+      type: "SET_CLEAR",
+      data: this.gameData,
+    };
+
+    this.broadcast(createUserData);
+    console.log(`🎯 Clear by ${clear.clear}`);
   }
 
   handleClear(clientId, move) {

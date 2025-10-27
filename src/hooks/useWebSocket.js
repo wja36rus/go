@@ -45,11 +45,19 @@ export const useWebSocket = (url) => {
               setGameData(data.data);
               break;
 
+            case "EXIT_GAME":
+              setGameData(data.data);
+              break;
+
             case "RELOAD":
               setGameData(data.data);
               break;
 
             case "CREATE_USER":
+              setGameData(data.data);
+              break;
+
+            case "SET_CLEAR":
               setGameData(data.data);
               break;
 
@@ -146,11 +154,29 @@ export const useWebSocket = (url) => {
     );
   }, []);
 
+  const sendExit = useCallback(() => {
+    wsRef.current.send(
+      JSON.stringify({
+        type: "EXIT_GAME",
+      })
+    );
+  }, []);
+
   const createUser = useCallback((user) => {
     wsRef.current.send(
       JSON.stringify({
         type: "CREATE_USER",
         user: user,
+      })
+    );
+  }, []);
+
+  const setClear = useCallback((clear, uuid) => {
+    wsRef.current.send(
+      JSON.stringify({
+        type: "SET_CLEAR",
+        clear: clear,
+        uuid: uuid,
       })
     );
   }, []);
@@ -173,7 +199,9 @@ export const useWebSocket = (url) => {
     isConnected,
     sendMove,
     sendReload,
+    sendExit,
     sendClear,
+    setClear,
     createUser,
     ping,
     reconnect,

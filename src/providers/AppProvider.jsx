@@ -9,7 +9,9 @@ export const AppProvider = ({ children }) => {
     createUser,
     sendMove,
     sendReload,
+    sendExit,
     sendClear,
+    setClear,
   } = useWebSocket("ws://10.100.40.243:8081");
 
   const value = {
@@ -18,8 +20,10 @@ export const AppProvider = ({ children }) => {
     isConnected,
     sendClear,
     createUser,
+    sendExit,
     sendMove,
     sendReload,
+    setClear,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

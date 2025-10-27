@@ -5,11 +5,9 @@ import { BlackStone } from "../Stone/BlackStone";
 import { useContext } from "react";
 import { AppContext } from "../../providers/AppContext";
 import cn from "classnames";
-import { useState } from "react";
 
 export const Grid = () => {
-  const { sendMove, sendClear } = useContext(AppContext);
-  const [clear, setClear] = useState(false);
+  const { sendMove, sendClear, setClear } = useContext(AppContext);
 
   const col = useAppStore.use.col();
   const row = useAppStore.use.row();
@@ -18,6 +16,7 @@ export const Grid = () => {
   const activeUser = sessionStorage.getItem("goUserId");
   const userData = useAppStore.use.user();
   const start = useAppStore.use.start();
+  const clear = useAppStore.use.clear();
 
   const GridItem = () => {
     const grid = [];
@@ -99,7 +98,7 @@ export const Grid = () => {
     <>
       <button
         className={cn(clear ? style.clearButtonOn : style.clearButtonOff)}
-        onClick={() => setClear(!clear)}
+        onClick={() => setClear({ clear: !clear, uuid: activeUser })}
       >
         {clear ? "Выключить очистку" : "Включить очистку"}
       </button>
