@@ -5,24 +5,13 @@ import { useAppStore } from "../store/appStore";
 export const useWebSocket = (url) => {
   const wsRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [clientId, setClientId] = useState(null);
   const reconnectCountRef = useRef(0);
   const isConnectingRef = useRef(false);
-  const addUser = useAppStore.use.addUser();
-  const setStoneByUser = useAppStore.use.setStoneByUser();
+  const setData = useAppStore.use.setData();
   const [gameData, setGameData] = useState();
 
   useEffect(() => {
-    const user = gameData?.user;
-    const move = gameData?.move;
-
-    if (user) {
-      addUser(user);
-    }
-
-    if (move) {
-      setStoneByUser(move);
-    }
+    setData(gameData);
   }, [gameData]);
 
   const connect = useCallback(() => {
@@ -53,17 +42,19 @@ export const useWebSocket = (url) => {
 
           switch (data.type) {
             case "CONNECTED":
-              setClientId(data.clientId);
+              setGameData(data.data);
+              break;
+
+            case "RELOAD":
+              setGameData(data.data);
               break;
 
             case "CREATE_USER":
-              setGameData({ user: { id: data.data.id, name: data.data.name } });
+              setGameData(data.data);
               break;
 
             case "MOVE":
-              setGameData({
-                move: { cellId: data.data.cellId, uuid: data.data.uuid },
-              });
+              setGameData(data.data);
               break;
 
             case "PONG":
@@ -134,6 +125,14 @@ export const useWebSocket = (url) => {
     );
   }, []);
 
+  const sendReload = useCallback(() => {
+    wsRef.current.send(
+      JSON.stringify({
+        type: "RELOAD",
+      })
+    );
+  }, []);
+
   const createUser = useCallback((user) => {
     wsRef.current.send(
       JSON.stringify({
@@ -159,8 +158,8 @@ export const useWebSocket = (url) => {
 
   return {
     isConnected,
-    clientId,
     sendMove,
+    sendReload,
     createUser,
     ping,
     reconnect,

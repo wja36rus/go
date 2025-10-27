@@ -1,11 +1,341 @@
 import { WebSocketServer } from "ws";
 
+const initialData = {
+  user: [],
+  start: "black",
+  point: [
+    {
+      id: 1,
+      user: "",
+    },
+    {
+      id: 2,
+      user: "",
+    },
+    {
+      id: 3,
+      user: "",
+    },
+    {
+      id: 4,
+      user: "",
+    },
+    {
+      id: 5,
+      user: "",
+    },
+    {
+      id: 6,
+      user: "",
+    },
+    {
+      id: 7,
+      user: "",
+    },
+    {
+      id: 8,
+      user: "",
+    },
+    {
+      id: 9,
+      user: "",
+    },
+    {
+      id: 10,
+      user: "",
+    },
+    {
+      id: 11,
+      user: "",
+    },
+    {
+      id: 12,
+      user: "",
+    },
+    {
+      id: 13,
+      user: "",
+    },
+    {
+      id: 14,
+      user: "",
+    },
+    {
+      id: 15,
+      user: "",
+    },
+    {
+      id: 16,
+      user: "",
+    },
+    {
+      id: 17,
+      user: "",
+    },
+    {
+      id: 18,
+      user: "",
+    },
+    {
+      id: 19,
+      user: "",
+    },
+    {
+      id: 20,
+      user: "",
+    },
+    {
+      id: 21,
+      user: "",
+    },
+    {
+      id: 22,
+      user: "",
+    },
+    {
+      id: 23,
+      user: "",
+    },
+    {
+      id: 24,
+      user: "",
+    },
+    {
+      id: 25,
+      user: "",
+    },
+    {
+      id: 26,
+      user: "",
+    },
+    {
+      id: 27,
+      user: "",
+    },
+    {
+      id: 28,
+      user: "",
+    },
+    {
+      id: 29,
+      user: "",
+    },
+    {
+      id: 30,
+      user: "",
+    },
+    {
+      id: 31,
+      user: "",
+    },
+    {
+      id: 32,
+      user: "",
+    },
+    {
+      id: 33,
+      user: "",
+    },
+    {
+      id: 34,
+      user: "",
+    },
+    {
+      id: 35,
+      user: "",
+    },
+    {
+      id: 36,
+      user: "",
+    },
+    {
+      id: 37,
+      user: "",
+    },
+    {
+      id: 38,
+      user: "",
+    },
+    {
+      id: 39,
+      user: "",
+    },
+    {
+      id: 40,
+      user: "",
+    },
+    {
+      id: 41,
+      user: "",
+    },
+    {
+      id: 42,
+      user: "",
+    },
+    {
+      id: 43,
+      user: "",
+    },
+    {
+      id: 44,
+      user: "",
+    },
+    {
+      id: 45,
+      user: "",
+    },
+    {
+      id: 46,
+      user: "",
+    },
+    {
+      id: 47,
+      user: "",
+    },
+    {
+      id: 48,
+      user: "",
+    },
+    {
+      id: 49,
+      user: "",
+    },
+    {
+      id: 50,
+      user: "",
+    },
+    {
+      id: 51,
+      user: "",
+    },
+    {
+      id: 52,
+      user: "",
+    },
+    {
+      id: 53,
+      user: "",
+    },
+    {
+      id: 54,
+      user: "",
+    },
+    {
+      id: 55,
+      user: "",
+    },
+    {
+      id: 56,
+      user: "",
+    },
+    {
+      id: 57,
+      user: "",
+    },
+    {
+      id: 58,
+      user: "",
+    },
+    {
+      id: 59,
+      user: "",
+    },
+    {
+      id: 60,
+      user: "",
+    },
+    {
+      id: 61,
+      user: "",
+    },
+    {
+      id: 62,
+      user: "",
+    },
+    {
+      id: 63,
+      user: "",
+    },
+    {
+      id: 64,
+      user: "",
+    },
+    {
+      id: 65,
+      user: "",
+    },
+    {
+      id: 66,
+      user: "",
+    },
+    {
+      id: 67,
+      user: "",
+    },
+    {
+      id: 68,
+      user: "",
+    },
+    {
+      id: 69,
+      user: "",
+    },
+    {
+      id: 70,
+      user: "",
+    },
+    {
+      id: 71,
+      user: "",
+    },
+    {
+      id: 72,
+      user: "",
+    },
+    {
+      id: 73,
+      user: "",
+    },
+    {
+      id: 74,
+      user: "",
+    },
+    {
+      id: 75,
+      user: "",
+    },
+    {
+      id: 76,
+      user: "",
+    },
+    {
+      id: 77,
+      user: "",
+    },
+    {
+      id: 78,
+      user: "",
+    },
+    {
+      id: 79,
+      user: "",
+    },
+    {
+      id: 80,
+      user: "",
+    },
+    {
+      id: 81,
+      user: "",
+    },
+  ],
+};
 class WebSocketGameServer {
   constructor(port = 8081) {
     this.port = port;
     this.wss = new WebSocketServer({ port });
     this.clients = new Map();
-
+    this.gameData = initialData;
     this.setupEventHandlers();
     this.setupProcessHandlers();
 
@@ -29,7 +359,7 @@ class WebSocketGameServer {
     this.clients.set(clientId, ws);
 
     console.log(`🔗 Client connected: ${clientId}`);
-    this.sendToClient(ws, { type: "CONNECTED", clientId });
+    this.sendToClient(ws, { type: "CONNECTED", data: this.gameData });
 
     ws.on("message", (data) => this.handleMessage(clientId, data));
     ws.on("close", () => this.handleDisconnection(clientId));
@@ -61,6 +391,7 @@ class WebSocketGameServer {
     const messageHandlers = {
       MOVE: () => this.handleMove(clientId, move),
       CREATE_USER: () => this.handleCreateUser(clientId, user),
+      RELOAD: () => this.handleReload(),
       PING: () => this.handlePing(clientId),
     };
 
@@ -73,6 +404,20 @@ class WebSocketGameServer {
     }
   }
 
+  handleReload() {
+    this.gameData.user = [];
+    this.gameData.start = "black";
+    this.gameData.point = initialData.point;
+
+    const reloadData = {
+      type: "RELOAD",
+      data: this.gameData,
+    };
+
+    this.broadcast(reloadData);
+    console.log(`🎯 User created by ${clientId}: ${user.name} (${user.id})`);
+  }
+
   handleCreateUser(clientId, user) {
     if (!user || !user.id || !user.name || !user.gameId) {
       console.warn(`⚠️ Invalid CREATE_USER data from ${clientId}`);
@@ -80,18 +425,18 @@ class WebSocketGameServer {
       return;
     }
 
-    const userData = {
+    if (this.gameData.user.length === 0) {
+      this.gameData.user.push({ id: user.id, name: user.name, color: "black" });
+    } else {
+      this.gameData.user.push({ id: user.id, name: user.name, color: "white" });
+    }
+
+    const createUserData = {
       type: "CREATE_USER",
-      data: {
-        clientId,
-        id: user.id,
-        name: user.name,
-        gameId: user.gameId,
-        timestamp: Date.now(),
-      },
+      data: this.gameData,
     };
 
-    this.broadcast(userData);
+    this.broadcast(createUserData);
     console.log(`🎯 User created by ${clientId}: ${user.name} (${user.id})`);
   }
 
@@ -102,18 +447,26 @@ class WebSocketGameServer {
       return;
     }
 
-    const moveData = {
+    const cell = this.gameData.point.find((item) => item.id == move.cellId);
+
+    if (cell.user !== "") {
+      cell.user = "";
+    } else {
+      cell.user = move.uuid;
+
+      if (this.gameData.start === "black") {
+        this.gameData.start = "white";
+      } else {
+        this.gameData.start = "black";
+      }
+    }
+
+    const moveDataUser = {
       type: "MOVE",
-      data: {
-        clientId,
-        cellId: move.cellId,
-        uuid: move.uuid || "default",
-        gameId: move.gameId,
-        timestamp: Date.now(),
-      },
+      data: this.gameData,
     };
 
-    this.broadcast(moveData);
+    this.broadcast(moveDataUser);
     console.log(
       `🎯 Move by ${clientId}: cell ${move.cellId}, game ${move.gameId}`
     );

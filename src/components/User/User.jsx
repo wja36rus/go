@@ -42,7 +42,7 @@ export const User = () => {
   return (
     <>
       {user.map((item) => (
-        <div className={style.userList}>
+        <div key={item.id} className={style.userList}>
           <p>{item.name}</p>
           <p>{stoneMap[item.color]}</p>
         </div>

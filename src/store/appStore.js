@@ -9,16 +9,6 @@ const initialData = {
   row: 8,
 };
 
-const points = () => {
-  const result = [];
-
-  for (let index = 0; index < (col + 1) * (row + 1); index++) {
-    result.push({ id: index + 1, user: "" });
-  }
-
-  return result;
-};
-
 const { col, row, size } = initialData;
 const useAppStoreBase = create()(
   devtools(
@@ -28,39 +18,18 @@ const useAppStoreBase = create()(
       col: col,
       row: row,
       count: col * row,
-      point: points(),
+      point: [],
       start: "black",
 
-      addUser: (user) =>
+      setData: (data) =>
         set((state) => {
-          if (state.user.length > 1) {
-            return;
-          }
-
-          if (state.user.length == 0) {
-            state.user = [...state.user, { ...user, color: "black" }];
-          } else {
-            state.user = [...state.user, { ...user, color: "white" }];
+          if (typeof data !== "undefined") {
+            const { user, point, start } = data;
+            state.user = user;
+            state.point = point;
+            state.start = start;
           }
         }),
-      setStoneByUser: (move) => {
-        set((state) => {
-          const find = state.point.find((item) => item.id == move.cellId);
-
-          if (find.user !== "") {
-            find.user = "";
-            return;
-          }
-
-          find.user = move.uuid;
-
-          if (state.start == "black") {
-            state.start = "white";
-          } else {
-            state.start = "black";
-          }
-        });
-      },
     }))
   )
 );
