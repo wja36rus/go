@@ -419,7 +419,7 @@ class WebSocketGameServer {
     };
 
     this.broadcast(reloadData);
-    console.log(`🎯 User created by ${clientId}: ${user.name} (${user.id})`);
+    console.log(`🎯 Reload success`);
   }
 
   handleCreateUser(clientId, user) {
