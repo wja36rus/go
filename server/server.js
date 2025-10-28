@@ -1,5 +1,212 @@
 import { WebSocketServer } from "ws";
 
+class GoGame {
+  constructor(boardSize = 9) {
+    this.boardSize = boardSize;
+    this.directions = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+  }
+
+  // Получение координат по ID
+  getCoordinates(id) {
+    const x = (id - 1) % this.boardSize;
+    const y = Math.floor((id - 1) / this.boardSize);
+    return { x, y };
+  }
+
+  // Получение ID по координатам
+  getId(x, y) {
+    return y * this.boardSize + x + 1;
+  }
+
+  // Проверка валидности координат
+  isValidCoordinate(x, y) {
+    return x >= 0 && x < this.boardSize && y >= 0 && y < this.boardSize;
+  }
+
+  // Получение соседних точек
+  getNeighbors(id) {
+    const { x, y } = this.getCoordinates(id);
+    const neighbors = [];
+
+    for (const [dx, dy] of this.directions) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (this.isValidCoordinate(nx, ny)) {
+        neighbors.push(this.getId(nx, ny));
+      }
+    }
+
+    return neighbors;
+  }
+
+  // Поиск группы камней и её свободных дамэ
+  findGroupWithLiberties(points, startId, visited = new Set()) {
+    const startPoint = points.find((p) => p.id === startId);
+    if (!startPoint || !startPoint.user) return { group: [], liberties: [] };
+
+    const color = startPoint.user;
+    const group = [];
+    const liberties = new Set();
+    const stack = [startId];
+
+    while (stack.length > 0) {
+      const currentId = stack.pop();
+
+      if (visited.has(currentId)) continue;
+      visited.add(currentId);
+
+      const currentPoint = points.find((p) => p.id === currentId);
+      if (currentPoint.user === color) {
+        group.push(currentId);
+
+        // Проверяем соседей
+        for (const neighborId of this.getNeighbors(currentId)) {
+          const neighbor = points.find((p) => p.id === neighborId);
+          if (!neighbor.user) {
+            // Свободная точка - дамэ
+            liberties.add(neighborId);
+          } else if (neighbor.user === color && !visited.has(neighborId)) {
+            stack.push(neighborId);
+          }
+        }
+      }
+    }
+
+    return { group: group, liberties: Array.from(liberties) };
+  }
+
+  // Проверка всех групп на захват после хода
+  checkCaptures(points, lastMoveId) {
+    const capturedStones = [];
+    const visited = new Set();
+
+    const lastMovePoint = points.find((p) => p.id === lastMoveId);
+    if (!lastMovePoint || !lastMovePoint.user) return capturedStones;
+
+    const lastMoveColor = lastMovePoint.user;
+    const opponentColor = lastMoveColor === "black" ? "white" : "black";
+
+    // Проверяем соседей последнего хода
+    for (const neighborId of this.getNeighbors(lastMoveId)) {
+      const neighbor = points.find((p) => p.id === neighborId);
+
+      if (
+        neighbor &&
+        neighbor.user === opponentColor &&
+        !visited.has(neighborId)
+      ) {
+        const { group, liberties } = this.findGroupWithLiberties(
+          points,
+          neighborId,
+          visited
+        );
+
+        // Если у группы нет дамэ - захватываем
+        if (liberties.length === 0) {
+          capturedStones.push(...group);
+        }
+      }
+    }
+
+    return capturedStones;
+  }
+
+  // Проверка самозахвата
+  isSuicide(points, moveId, color) {
+    // Создаем временную копию точек
+    const tempPoints = JSON.parse(JSON.stringify(points));
+    const movePoint = tempPoints.find((p) => p.id === moveId);
+
+    // Временно ставим камень
+    const originalUser = movePoint.user;
+    movePoint.user = color;
+
+    const { group, liberties } = this.findGroupWithLiberties(
+      tempPoints,
+      moveId
+    );
+    let isSuicide = liberties.length === 0;
+
+    // Проверяем, не захватываем ли мы вражеские камни
+    if (isSuicide) {
+      for (const neighborId of this.getNeighbors(moveId)) {
+        const neighbor = tempPoints.find((p) => p.id === neighborId);
+        if (neighbor && neighbor.user && neighbor.user !== color) {
+          const opponentGroup = this.findGroupWithLiberties(
+            tempPoints,
+            neighborId
+          );
+          if (opponentGroup.liberties.length === 0) {
+            isSuicide = false; // Захватываем врага - не самозахват
+            break;
+          }
+        }
+      }
+    }
+
+    return isSuicide;
+  }
+
+  // Основная функция для обработки хода
+  processMove(points, moveId, userColor) {
+    // Проверяем, что точка свободна
+    const movePoint = points.find((p) => p.id === moveId);
+    if (movePoint.user) {
+      return { valid: false, reason: "point_not_empty", captured: [] };
+    }
+
+    // Проверяем самозахват
+    if (this.isSuicide(points, moveId, userColor)) {
+      return { valid: false, reason: "suicide", captured: [] };
+    }
+
+    // Ставим камень
+    movePoint.user = userColor;
+
+    // Проверяем захваты
+    const capturedStones = this.checkCaptures(points, moveId);
+
+    // Очищаем поле user у захваченных камней
+    for (const stoneId of capturedStones) {
+      const capturedPoint = points.find((p) => p.id === stoneId);
+      capturedPoint.user = "";
+    }
+
+    return {
+      valid: true,
+      captured: capturedStones,
+      points: points, // возвращаем обновленный массив
+    };
+  }
+
+  // Функция только для проверки (без изменения данных)
+  checkCapturesOnly(points) {
+    const allCaptured = [];
+    const visited = new Set();
+
+    for (const point of points) {
+      if (point.user && !visited.has(point.id)) {
+        const { group, liberties } = this.findGroupWithLiberties(
+          points,
+          point.id,
+          visited
+        );
+
+        if (liberties.length === 0) {
+          allCaptured.push(...group);
+        }
+      }
+    }
+
+    return allCaptured;
+  }
+}
+
 const initialData = {
   user: [],
   start: "black",
@@ -547,6 +754,18 @@ class WebSocketGameServer {
         this.gameData.start = "black";
       }
     }
+
+    const game = new GoGame(9);
+    console.log("\nПроверка всех возможных захватов:");
+    const potentialCaptures = game.checkCapturesOnly(this.gameData.point);
+    potentialCaptures.forEach((it) => {
+      const findStone = this.gameData.point.find((item) => item.id == it);
+      const findUser = this.gameData.user.find(
+        (item) => item.id != findStone.user
+      );
+      findUser.eats.push(findStone.id);
+      findStone.user = "";
+    });
 
     const moveDataUser = {
       type: "MOVE",
